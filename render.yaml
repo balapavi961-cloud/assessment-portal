@@ -1,30 +1,59 @@
 services:
-  # Backend Web Service
+  # ─── Backend Web Service (Docker) ──────────────────────────────────────────
   - type: web
     name: assessment-portal-api
     env: docker
     dockerfilePath: backend/Dockerfile
     dockerContext: backend
     plan: free
+    healthCheckPath: /health
     envVars:
       - key: PORT
         value: 5000
       - key: NODE_ENV
         value: production
-      - key: USE_JUDGE0
-        value: "false"  # Forces local execution inside the Docker container
+
+      # MongoDB Atlas URI — paste your connection string in Render dashboard
+      # (Network Access → Allow from Anywhere: 0.0.0.0/0)
       - key: MONGODB_URI
-        sync: false    # User needs to configure their MongoDB Connection String in Render
+        sync: false
+
+      # JWT secret — auto-generated on first deploy
       - key: JWT_SECRET
-        generateValue: true # Generates a random secret key on deployment
+        generateValue: true
+
+      # Admin credentials
       - key: ADMIN_EMAIL
         value: admin@assessment.com
       - key: ADMIN_PASSWORD
-        value: Admin@123456
+        sync: false     # Set a strong password in Render dashboard
       - key: ADMIN_NAME
         value: Super Admin
 
-  # Frontend Static Site
+      # CORS — set to your frontend URL after deploy
+      # Multiple origins: "https://your-app.vercel.app,https://your-app.onrender.com"
+      - key: CLIENT_URL
+        sync: false
+
+      # Code execution — use local Docker compilers (no API key needed)
+      - key: USE_JUDGE0
+        value: "false"
+      - key: CODE_EXEC_TIMEOUT
+        value: "10000"
+      - key: MAX_MEMORY_MB
+        value: "256"
+
+      # Optional email notifications
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+
+  # ─── Frontend Static Site ──────────────────────────────────────────────────
   - type: static
     name: assessment-portal-web
     env: node
@@ -32,9 +61,17 @@ services:
     buildCommand: npm install && npm run build
     publishPath: dist
     plan: free
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: "no-cache"
+    routes:
+      # SPA fallback — serve index.html for all unknown routes
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
+      # Set VITE_API_URL to your backend URL after first deploy
+      # Example: https://assessment-portal-api.onrender.com/api
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: assessment-portal-api
-          property: host
+        sync: false

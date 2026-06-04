@@ -1,0 +1,70 @@
+# ─── Koyeb Deployment Configuration ──────────────────────────────────────────
+# Deploy via Koyeb CLI: koyeb app init assessment-portal --config koyeb.yaml
+# Or import this file in the Koyeb dashboard → New Service → "Import from file"
+#
+# Free tier: 1 eco instance (512MB RAM, shared CPU) — sufficient for the backend
+# with USE_JUDGE0=false and 3 simultaneous participants.
+
+name: assessment-portal
+
+services:
+  - name: api
+    type: web
+
+    # ── Build ──────────────────────────────────────────────────────────────────
+    # Koyeb builds directly from a GitHub repo branch using the Dockerfile
+    git:
+      # Replace with your actual GitHub repo URL
+      repository: github.com/YOUR_GITHUB_USERNAME/assessment-portal
+      branch: main
+      build_command: ""
+      # Context is the backend folder; Dockerfile is inside it
+      dockerfile: backend/Dockerfile
+      workdir: backend
+
+    # ── Instance ───────────────────────────────────────────────────────────────
+    instance_type: nano    # Free tier: 512MB RAM, 0.1 vCPU
+    regions:
+      - fra                # Frankfurt (lowest latency for most users; change as needed)
+    scaling:
+      min: 1
+      max: 1               # Scale to 1 on free tier
+
+    # ── Ports ──────────────────────────────────────────────────────────────────
+    ports:
+      - port: 5000
+        protocol: http
+
+    # ── Health Check ───────────────────────────────────────────────────────────
+    checks:
+      - type: http
+        port: 5000
+        path: /health
+        interval: 30s
+        timeout: 10s
+        healthy_threshold: 1
+        unhealthy_threshold: 3
+
+    # ── Environment Variables ──────────────────────────────────────────────────
+    # Secrets (MONGODB_URI, JWT_SECRET, ADMIN_PASSWORD, CLIENT_URL) must be set
+    # in the Koyeb dashboard under Secrets, not hardcoded here.
+    env:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "5000"
+      - key: USE_JUDGE0
+        value: "false"
+      - key: CODE_EXEC_TIMEOUT
+        value: "10000"
+      - key: MAX_MEMORY_MB
+        value: "256"
+      - key: ADMIN_EMAIL
+        value: admin@assessment.com
+      - key: ADMIN_NAME
+        value: "Super Admin"
+      # The following must be added as Koyeb secrets:
+      # - MONGODB_URI
+      # - JWT_SECRET
+      # - ADMIN_PASSWORD
+      # - CLIENT_URL  (your frontend URL, e.g. https://your-app.vercel.app)

@@ -1,0 +1,17 @@
+# Frontend .dockerignore
+.env
+.env.local
+.env.*.local
+
+node_modules
+npm-debug.log*
+*.log
+
+dist
+
+.git
+.gitignore
+.cursor
+.vscode
+.DS_Store
+Thumbs.db

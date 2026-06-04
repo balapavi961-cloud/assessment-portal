@@ -1,0 +1,30 @@
+# Prevent secrets and dev artifacts from leaking into Docker image
+.env
+.env.local
+.env.*.local
+
+# Dev dependencies and logs
+node_modules
+npm-debug.log*
+*.log
+
+# Git
+.git
+.gitignore
+
+# Editor config
+.cursor
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+coverage
+*.test.js
+*.spec.js
+__tests__
