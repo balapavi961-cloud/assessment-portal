@@ -35,9 +35,7 @@ services:
       - key: CLIENT_URL
         sync: false
 
-      # Code execution — use local Docker compilers (no API key needed)
-      - key: USE_JUDGE0
-        value: "false"
+
       - key: CODE_EXEC_TIMEOUT
         value: "10000"
       - key: MAX_MEMORY_MB

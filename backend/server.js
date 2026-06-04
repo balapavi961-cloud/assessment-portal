@@ -10,7 +10,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const testRoutes = require('./routes/testRoutes');
 const submissionRoutes = require('./routes/submissionRoutes');
 const createAdmin = require('./utils/createAdmin');
-const { initializeJudge0 } = require('./services/judge0Service');
+
 
 // ─── Startup: Verify Compilers ────────────────────────────────────────────────
 /**
@@ -42,9 +42,7 @@ console.log('');
 // ─── Database & Services ──────────────────────────────────────────────────────
 connectDB();
 createAdmin();
-initializeJudge0().catch((err) =>
-  console.error('Judge0 initialization failed:', err.message)
-);
+
 
 // ─── Express App ──────────────────────────────────────────────────────────────
 const app = express();

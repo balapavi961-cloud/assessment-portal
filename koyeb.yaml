@@ -3,7 +3,7 @@
 # Or import this file in the Koyeb dashboard → New Service → "Import from file"
 #
 # Free tier: 1 eco instance (512MB RAM, shared CPU) — sufficient for the backend
-# with USE_JUDGE0=false and 3 simultaneous participants.
+# with 3 simultaneous participants.
 
 name: assessment-portal
 
@@ -53,8 +53,7 @@ services:
         value: production
       - key: PORT
         value: "5000"
-      - key: USE_JUDGE0
-        value: "false"
+
       - key: CODE_EXEC_TIMEOUT
         value: "10000"
       - key: MAX_MEMORY_MB

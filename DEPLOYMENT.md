@@ -59,7 +59,7 @@ In Render dashboard → **Environment** tab, add:
 | `JWT_SECRET` | Any long random string (or click "Generate") |
 | `ADMIN_PASSWORD` | A strong password |
 | `CLIENT_URL` | Your Vercel frontend URL (after deploy step 6) |
-| `USE_JUDGE0` | `false` |
+
 | `NODE_ENV` | `production` |
 | `PORT` | `5000` |
 | `CODE_EXEC_TIMEOUT` | `10000` |
@@ -118,7 +118,7 @@ In Railway dashboard → **Variables** tab:
 | `ADMIN_PASSWORD` | A strong password |
 | `ADMIN_NAME` | `Super Admin` |
 | `CLIENT_URL` | Your Vercel frontend URL |
-| `USE_JUDGE0` | `false` |
+
 | `NODE_ENV` | `production` |
 | `CODE_EXEC_TIMEOUT` | `10000` |
 | `MAX_MEMORY_MB` | `256` |
@@ -173,7 +173,7 @@ In the service environment section:
 |----------|-------|
 | `NODE_ENV` | `production` |
 | `PORT` | `5000` |
-| `USE_JUDGE0` | `false` |
+
 | `ADMIN_EMAIL` | `admin@assessment.com` |
 | `ADMIN_NAME` | `Super Admin` |
 | `CODE_EXEC_TIMEOUT` | `10000` |
@@ -237,9 +237,7 @@ Redeploy the backend to apply the CORS update.
 | `ADMIN_PASSWORD` | Yes | — | Password for the admin account |
 | `ADMIN_NAME` | No | `Super Admin` | Display name for admin |
 | `CLIENT_URL` | Yes | — | Frontend URL(s) for CORS. Comma-separated. |
-| `USE_JUDGE0` | No | `false` | `false` = local Docker compilers, `true` = Judge0 API |
-| `JUDGE0_API_URL` | No | — | Only if USE_JUDGE0=true |
-| `JUDGE0_API_KEY` | No | — | Only if USE_JUDGE0=true |
+
 | `CODE_EXEC_TIMEOUT` | No | `10000` | Code execution timeout in milliseconds |
 | `MAX_MEMORY_MB` | No | `256` | Memory limit per code execution in MB |
 | `SMTP_HOST` | No | — | SMTP server for email notifications |

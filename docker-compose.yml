@@ -16,7 +16,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=5000
-      - USE_JUDGE0=false
+
       - MAX_MEMORY_MB=256
       - CODE_EXEC_TIMEOUT=10000
     mem_limit: 768m          # Limit memory for the backend + JVM spawns
