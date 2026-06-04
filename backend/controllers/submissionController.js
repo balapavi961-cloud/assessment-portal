@@ -181,7 +181,10 @@ const runCode = asyncHandler(async (req, res) => {
   const question = await CodingQuestion.findById(questionId);
   if (!question) throw new ApiError(404, 'Question not found');
 
-  const result = await executeCode(language, code, customInput || question.sampleInput);
+  const result = await executeCode(language, code, customInput || question.sampleInput, {
+    timeLimit: question.timeLimit,
+    memoryLimit: question.memoryLimit,
+  });
   res.json({ success: true, data: result });
 });
 
@@ -208,7 +211,10 @@ const submitCoding = asyncHandler(async (req, res) => {
   let score = 0;
 
   if (question.autoEvaluate && question.testCases.length > 0) {
-    testResults = await runTestCases(language, code, question.testCases, true);
+    testResults = await runTestCases(language, code, question.testCases, true, {
+      timeLimit: question.timeLimit,
+      memoryLimit: question.memoryLimit,
+    });
     const visibleCases = question.testCases.filter((tc) => !tc.isHidden);
     const hiddenCount = question.testCases.length - visibleCases.length;
     const passedCount = testResults.filter((r) => r.passed).length;

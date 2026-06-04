@@ -9,9 +9,11 @@ const adminRoutes = require('./routes/adminRoutes');
 const testRoutes = require('./routes/testRoutes');
 const submissionRoutes = require('./routes/submissionRoutes');
 const createAdmin = require("./utils/createAdmin");
+const { initializeJudge0 } = require('./services/judge0Service');
 
 connectDB();
 createAdmin();
+initializeJudge0().catch((err) => console.error('Judge0 initialization failed:', err.message));
 const app = express();
 
 app.use(

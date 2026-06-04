@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { v4: uuidv4 } = require('uuid');
+const { executeCodeInJudge0 } = require('./judge0Service');
 
 const TIMEOUT = parseInt(process.env.CODE_EXEC_TIMEOUT, 10) || 10000;
 
@@ -19,10 +20,27 @@ const LANGUAGE_CONFIG = {
     ext: 'java',
     compile: (dir, baseName) =>
       new Promise((resolve, reject) => {
+        let completed = false;
+        const safeReject = (err) => {
+          if (!completed) {
+            completed = true;
+            reject(err);
+          }
+        };
+        const safeResolve = () => {
+          if (!completed) {
+            completed = true;
+            resolve();
+          }
+        };
+
         const proc = spawn('javac', [`${baseName}.java`], { cwd: dir });
         let err = '';
-        proc.stderr.on('data', (d) => (err += d.toString()));
-        proc.on('close', (code) => (code === 0 ? resolve() : reject(new Error(err || 'Compilation failed'))));
+        proc.on('error', (e) => safeReject(new Error(`Failed to start javac: ${e.message}`)));
+        if (proc.stderr) {
+          proc.stderr.on('data', (d) => (err += d.toString()));
+        }
+        proc.on('close', (code) => (code === 0 ? safeResolve() : safeReject(new Error(err || 'Compilation failed'))));
       }),
     run: (dir, baseName) => ['java', ['-cp', dir, baseName]],
   },
@@ -30,11 +48,28 @@ const LANGUAGE_CONFIG = {
     ext: 'cpp',
     compile: (dir, baseName) =>
       new Promise((resolve, reject) => {
+        let completed = false;
+        const safeReject = (err) => {
+          if (!completed) {
+            completed = true;
+            reject(err);
+          }
+        };
+        const safeResolve = (out) => {
+          if (!completed) {
+            completed = true;
+            resolve(out);
+          }
+        };
+
         const out = path.join(dir, 'program');
         const proc = spawn('g++', [`${baseName}.cpp`, '-o', out], { cwd: dir });
         let err = '';
-        proc.stderr.on('data', (d) => (err += d.toString()));
-        proc.on('close', (code) => (code === 0 ? resolve(out) : reject(new Error(err || 'Compilation failed'))));
+        proc.on('error', (e) => safeReject(new Error(`Failed to start g++: ${e.message}`)));
+        if (proc.stderr) {
+          proc.stderr.on('data', (d) => (err += d.toString()));
+        }
+        proc.on('close', (code) => (code === 0 ? safeResolve(out) : safeReject(new Error(err || 'Compilation failed'))));
       }),
     run: (outFile) => [outFile, []],
   },
@@ -43,18 +78,42 @@ const LANGUAGE_CONFIG = {
 const runProcess = (command, args, input, cwd) => {
   return new Promise((resolve) => {
     const start = Date.now();
-    const proc = spawn(command, args, { cwd, timeout: TIMEOUT });
+    let proc;
+    try {
+      proc = spawn(command, args, { cwd, timeout: TIMEOUT });
+    } catch (e) {
+      return resolve({
+        output: '',
+        error: `Failed to spawn process: ${e.message}`,
+        executionTime: 0,
+        timedOut: false,
+      });
+    }
+
     let stdout = '';
     let stderr = '';
 
-    proc.stdout.on('data', (d) => (stdout += d.toString()));
-    proc.stderr.on('data', (d) => (stderr += d.toString()));
+    proc.on('error', (err) => {
+      stderr += `Execution error: ${err.message}\n`;
+    });
 
-    if (input) proc.stdin.write(input);
-    proc.stdin.end();
+    if (proc.stdout) {
+      proc.stdout.on('data', (d) => (stdout += d.toString()));
+    }
+    if (proc.stderr) {
+      proc.stderr.on('data', (d) => (stderr += d.toString()));
+    }
+
+    if (input && proc.stdin) {
+      proc.stdin.on('error', (err) => {
+        stderr += `Stdin error: ${err.message}\n`;
+      });
+      proc.stdin.write(input);
+      proc.stdin.end();
+    }
 
     const timer = setTimeout(() => {
-      proc.kill();
+      if (proc) proc.kill();
       resolve({
         output: '',
         error: 'Execution timed out',
@@ -78,7 +137,11 @@ const runProcess = (command, args, input, cwd) => {
 /**
  * Execute code with optional stdin input
  */
-const executeCode = async (language, code, input = '') => {
+const executeCode = async (language, code, input = '', options = {}) => {
+  if (process.env.USE_JUDGE0 === 'true') {
+    return await executeCodeInJudge0(language, code, input, options);
+  }
+
   const config = LANGUAGE_CONFIG[language];
   if (!config) {
     return { output: '', error: `Unsupported language: ${language}`, executionTime: 0 };
@@ -129,13 +192,13 @@ const executeCode = async (language, code, input = '') => {
 /**
  * Run against multiple test cases
  */
-const runTestCases = async (language, code, testCases, includeHidden = false) => {
+const runTestCases = async (language, code, testCases, includeHidden = false, options = {}) => {
   const results = [];
 
   for (const tc of testCases) {
     if (tc.isHidden && !includeHidden) continue;
 
-    const exec = await executeCode(language, code, tc.input || '');
+    const exec = await executeCode(language, code, tc.input || '', options);
     const passed =
       !exec.error &&
       !exec.timedOut &&
