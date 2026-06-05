@@ -10,7 +10,6 @@ const adminRoutes = require('./routes/adminRoutes');
 const testRoutes = require('./routes/testRoutes');
 const submissionRoutes = require('./routes/submissionRoutes');
 const createAdmin = require('./utils/createAdmin');
-const { execSync } = require("child_process");
 
 // ─── Startup: Verify Compilers ────────────────────────────────────────────────
 /**
