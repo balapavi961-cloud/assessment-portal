@@ -10,7 +10,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const testRoutes = require('./routes/testRoutes');
 const submissionRoutes = require('./routes/submissionRoutes');
 const createAdmin = require('./utils/createAdmin');
-
+const { execSync } = require("child_process");
 
 // ─── Startup: Verify Compilers ────────────────────────────────────────────────
 /**
@@ -20,16 +20,27 @@ const createAdmin = require('./utils/createAdmin');
  */
 const compilerStatus = { java: false, python: false, cpp: false, node: false };
 
-const checkCompiler = (name, cmd) => {
-  try {
-    const version = execSync(cmd, { stdio: 'pipe', timeout: 5000 }).toString().trim().split('\n')[0];
-    console.log(`  ✅ ${name.padEnd(8)} ${version}`);
-    return true;
-  } catch (e) {
-    console.warn(`  ❌ ${name.padEnd(8)} NOT FOUND — ${e.message.split('\n')[0]}`);
-    return false;
-  }
-};
+
+try {
+  console.log("===== COMPILER CHECK =====");
+
+  console.log(
+    execSync("which javac", { encoding: "utf8" })
+  );
+
+  console.log(
+    execSync("javac -version 2>&1", { encoding: "utf8" })
+  );
+
+  console.log(
+    execSync("java -version 2>&1", { encoding: "utf8" })
+  );
+
+} catch (err) {
+  console.error("COMPILER CHECK FAILED");
+  console.error(err.message);
+}
+
 
 console.log('\n🔧 Compiler verification:');
 compilerStatus.java   = checkCompiler('java',    'java -version 2>&1 | head -1');

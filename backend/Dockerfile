@@ -15,7 +15,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python-is-python3 \
     g++ \
-    build-essential \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
