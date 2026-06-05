@@ -17,7 +17,6 @@ const createAdmin = require('./utils/createAdmin');
  * Logs a ✅ or ❌ for each. This surfaces ENOENT issues immediately
  * rather than failing silently during a live exam submission.
  */
-const compilerStatus = { java: false, python: false, cpp: false, node: false };
 
 
 try {
@@ -40,14 +39,6 @@ try {
   console.error(err.message);
 }
 
-
-console.log('\n🔧 Compiler verification:');
-compilerStatus.java   = checkCompiler('java',    'java -version 2>&1 | head -1');
-compilerStatus.java   = checkCompiler('javac',   'javac -version 2>&1') && compilerStatus.java;
-compilerStatus.python = checkCompiler('python3', 'python3 --version 2>&1');
-compilerStatus.cpp    = checkCompiler('g++',     'g++ --version 2>&1 | head -1');
-compilerStatus.node   = checkCompiler('node',    'node --version 2>&1');
-console.log('');
 
 // ─── Database & Services ──────────────────────────────────────────────────────
 connectDB();
