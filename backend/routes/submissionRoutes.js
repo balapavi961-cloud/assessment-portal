@@ -8,12 +8,14 @@ const {
   recordViolation,
   submitTest,
   getMyResult,
+  getMySubmissions,
 } = require('../controllers/submissionController');
 const { protect, candidateOnly } = require('../middleware/auth');
 
 const router = express.Router();
 router.use(protect, candidateOnly);
 
+router.get('/my', getMySubmissions);           // GET all past submissions for this candidate
 router.post('/:testId/start', startTest);
 router.put('/:testId/mcq', saveMcqAnswer);
 router.put('/:testId/coding/save', saveCodingAnswer);

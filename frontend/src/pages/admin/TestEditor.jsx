@@ -82,15 +82,25 @@ const TestEditor = () => {
   };
 
   const deleteMcq = async (qid) => {
-    await api.delete(`/tests/mcq/${qid}`);
-    setMcqs(mcqs.filter((q) => q._id !== qid));
-    toast.success('Deleted');
+    if (!window.confirm('Are you sure you want to delete this MCQ?')) return;
+    try {
+      await api.delete(`/tests/mcq/${qid}`);
+      setMcqs(mcqs.filter((q) => q._id !== qid));
+      toast.success('Deleted');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Delete failed');
+    }
   };
 
   const deleteCoding = async (qid) => {
-    await api.delete(`/tests/coding/${qid}`);
-    setCodings(codings.filter((q) => q._id !== qid));
-    toast.success('Deleted');
+    if (!window.confirm('Are you sure you want to delete this coding question?')) return;
+    try {
+      await api.delete(`/tests/coding/${qid}`);
+      setCodings(codings.filter((q) => q._id !== qid));
+      toast.success('Deleted');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Delete failed');
+    }
   };
 
   const togglePublish = async () => {

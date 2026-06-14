@@ -12,6 +12,7 @@ import TestsList from './pages/admin/TestsList';
 import TestEditor from './pages/admin/TestEditor';
 import UsersList from './pages/admin/UsersList';
 import CandidateDashboard from './pages/candidate/CandidateDashboard';
+import MyTests from './pages/candidate/MyTests';
 import TestInstructions from './pages/candidate/TestInstructions';
 import ExamInterface from './pages/candidate/ExamInterface';
 import TestResult from './pages/candidate/TestResult';
@@ -43,7 +44,7 @@ function App() {
 
             {/* Candidate routes */}
             <Route path="/dashboard" element={<ProtectedRoute candidateOnly><CandidateDashboard /></ProtectedRoute>} />
-            <Route path="/tests" element={<ProtectedRoute candidateOnly><CandidateDashboard /></ProtectedRoute>} />
+            <Route path="/tests" element={<ProtectedRoute candidateOnly><MyTests /></ProtectedRoute>} />
             <Route path="/tests/:testId/instructions" element={<ProtectedRoute candidateOnly><TestInstructions /></ProtectedRoute>} />
             <Route path="/tests/:testId/exam" element={<ProtectedRoute candidateOnly><ExamInterface /></ProtectedRoute>} />
             <Route path="/tests/:testId/result" element={<ProtectedRoute><TestResult /></ProtectedRoute>} />

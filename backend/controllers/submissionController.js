@@ -444,6 +444,18 @@ const getMyResult = asyncHandler(async (req, res) => {
 });
 
 /**
+ * Get all submissions (history) for the logged-in candidate
+ */
+const getMySubmissions = asyncHandler(async (req, res) => {
+  const submissions = await Submission.find({ user: req.user._id })
+    .populate('test', 'title duration totalMarks startTime endTime')
+    .select('test status totalScore maxScore mcqScore codingScore percentage rank submittedAt timeTakenMinutes')
+    .sort({ submittedAt: -1 });
+
+  res.json({ success: true, data: submissions });
+});
+
+/**
  * Leaderboard
  */
 const getLeaderboard = asyncHandler(async (req, res) => {
@@ -536,6 +548,7 @@ module.exports = {
   recordViolation,
   submitTest,
   getMyResult,
+  getMySubmissions,
   getLeaderboard,
   getTestSubmissions,
   getSubmissionDetail,

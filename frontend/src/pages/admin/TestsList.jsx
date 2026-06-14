@@ -4,11 +4,90 @@ import api from '../../utils/api';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
-import { Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, AlertTriangle, X } from 'lucide-react';
 
+/* ─── Delete Confirmation Modal ─────────────────────────────────────────── */
+const DeleteConfirmModal = ({ test, onConfirm, onCancel, isDeleting }) => {
+  if (!test) return null;
+
+  return (
+    /* Backdrop */
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}
+      onClick={onCancel}
+    >
+      {/* Modal card */}
+      <div
+        className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-md p-6 relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={onCancel}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        {/* Icon */}
+        <div className="flex items-center justify-center w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 mx-auto mb-4">
+          <AlertTriangle className="w-7 h-7 text-red-600 dark:text-red-400" />
+        </div>
+
+        {/* Heading */}
+        <h2 className="text-xl font-bold text-center text-gray-900 dark:text-gray-100 mb-1">
+          Delete Test?
+        </h2>
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+          You are about to permanently delete:
+        </p>
+        <p className="text-center font-semibold text-gray-800 dark:text-gray-200 mb-4 px-2 truncate">
+          "{test.title}"
+        </p>
+        <p className="text-center text-sm text-red-600 dark:text-red-400 mb-6">
+          This will also remove all questions and participant records. This action
+          <strong> cannot</strong> be undone.
+        </p>
+
+        {/* Actions */}
+        <div className="flex gap-3">
+          <button
+            onClick={onCancel}
+            disabled={isDeleting}
+            className="flex-1 btn-secondary"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className="flex-1 btn-danger flex items-center justify-center gap-2"
+          >
+            {isDeleting ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Deleting…
+              </>
+            ) : (
+              <>
+                <Trash2 className="w-4 h-4" />
+                Yes, Delete
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ─── Main Component ─────────────────────────────────────────────────────── */
 const TestsList = () => {
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [testToDelete, setTestToDelete] = useState(null); // { _id, title }
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchTests = () => {
     api
@@ -29,14 +108,24 @@ const TestsList = () => {
     }
   };
 
-  const deleteTest = async (id) => {
-    if (!confirm('Delete this test and all questions?')) return;
+  /* Open the modal instead of calling confirm() */
+  const handleDeleteClick = (test) => {
+    setTestToDelete(test);
+  };
+
+  /* Called when user confirms inside the modal */
+  const confirmDelete = async () => {
+    if (!testToDelete) return;
+    setIsDeleting(true);
     try {
-      await api.delete(`/tests/${id}`);
+      await api.delete(`/tests/${testToDelete._id}`);
       toast.success('Test deleted');
+      setTestToDelete(null);
       fetchTests();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -87,7 +176,11 @@ const TestsList = () => {
                 <Link to={`/admin/tests/${test._id}`} className="btn-secondary p-2">
                   <Edit className="w-4 h-4" />
                 </Link>
-                <button onClick={() => deleteTest(test._id)} className="btn-danger p-2">
+                <button
+                  onClick={() => handleDeleteClick(test)}
+                  className="btn-danger p-2"
+                  title="Delete test"
+                >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -98,6 +191,14 @@ const TestsList = () => {
           )}
         </div>
       )}
+
+      {/* Delete confirmation modal */}
+      <DeleteConfirmModal
+        test={testToDelete}
+        onConfirm={confirmDelete}
+        onCancel={() => !isDeleting && setTestToDelete(null)}
+        isDeleting={isDeleting}
+      />
     </Layout>
   );
 };
